@@ -414,24 +414,32 @@ impl Instance {
 
             // If configured, ensure a label exists for this workspace even if the
             // button already existed; this prevents labels from disappearing when
-            // windows move between workspaces.
+            // windows move between workspaces or when the label changes.
             let ws_idx = window.workspace_idx();
             let ws_label = window.workspace_label();
             if self.state.config().display_vars().workspace_buttons {
-                if !self.workspace_buttons.contains_key(&ws_idx) {
-                    let button = gtk::Button::with_label(&ws_label);
-                    button.style_context().add_class("taskbar-button-workspace");
-
-
-                    let statec = self.state.clone();
-                    button.connect_clicked(move |_| {
-                        if let Err(e) = statec.niri().activate_workspace(ws_idx as u8) {
-                            tracing::warn!(%e, id = ws_idx, "error trying to activate workspace");
+                use waybar_cffi::gtk::traits::ButtonExt;
+                match self.workspace_buttons.get(&ws_idx) {
+                    Some(button) => {
+                        // Update label if changed
+                        if button.label().as_deref() != Some(ws_label.as_str()) {
+                            button.set_label(&ws_label);
                         }
-                    });
+                    }
+                    None => {
+                        let button = gtk::Button::with_label(&ws_label);
+                        button.style_context().add_class("taskbar-button-workspace");
 
-                    self.container.add(&button);
-                    self.workspace_buttons.insert(ws_idx, button);
+                        let statec = self.state.clone();
+                        button.connect_clicked(move |_| {
+                            if let Err(e) = statec.niri().activate_workspace(ws_idx as u8) {
+                                tracing::warn!(%e, id = ws_idx, "error trying to activate workspace");
+                            }
+                        });
+
+                        self.container.add(&button);
+                        self.workspace_buttons.insert(ws_idx, button);
+                    }
                 }
             }
 
