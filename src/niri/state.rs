@@ -211,6 +211,7 @@ impl Niri {
                 window: ww.window.clone(),
                 output: ww.workspace.output.clone(),
                 workspace_idx: ww.workspace.idx as u64,
+                workspace_name: ww.workspace.name.clone(),
             })
             .collect()
     }
@@ -224,6 +225,7 @@ pub struct Window {
     window: NiriWindow,
     output: Option<String>,
     workspace_idx: u64,
+    workspace_name: Option<String>,
 }
 
 impl Window {
@@ -234,6 +236,14 @@ impl Window {
     /// Returns the workspace index this window belongs to.
     pub fn workspace_idx(&self) -> u64 {
         self.workspace_idx
+    }
+
+    /// Returns the workspace label: name if present, otherwise index as string.
+    pub fn workspace_label(&self) -> String {
+        match &self.workspace_name {
+            Some(name) => name.clone(),
+            None => self.workspace_idx.to_string(),
+        }
     }
 }
 

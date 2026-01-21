@@ -416,9 +416,10 @@ impl Instance {
             // button already existed; this prevents labels from disappearing when
             // windows move between workspaces.
             let ws_idx = window.workspace_idx();
+            let ws_label = window.workspace_label();
             if self.state.config().display_vars().workspace_buttons {
                 if !self.workspace_buttons.contains_key(&ws_idx) {
-                    let button = gtk::Button::with_label(&ws_idx.to_string());
+                    let button = gtk::Button::with_label(&ws_label);
                     button.style_context().add_class("taskbar-button-workspace");
 
 
